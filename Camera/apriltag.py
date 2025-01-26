@@ -23,7 +23,7 @@ class AprilTag_Camera():
         
         self.clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
 
-    def image_processing(self, frame, detector, K_M, D_C):
+    def image_processing(self, frame, detector):
         # 畸变矫正
         # undistorted_img = cv2.undistort(frame, K_M, D_C)
         # cv2.imshow("Un", undistorted_img)
@@ -38,11 +38,11 @@ class AprilTag_Camera():
 
         return results
     
-    def apriltag_process(self, results, frame, K_M, D_C):
+    def apriltag_process(self, results, frame):
         for r in results:
             # 获取编号
             ID = r.tag_id
-            print(ID)
+            # print(ID)
             # 获取标签的中心位置
             tag_center = (int(r.center[0]), int(r.center[1]))
             # 更新卡尔曼滤波器
@@ -68,28 +68,7 @@ class AprilTag_Camera():
                 [r.corners[3][0], r.corners[3][1]]
             ], dtype=np.float32)
 
-            # 使用 PnP 算法估算相机到标签的距离
-            success, rvec, tvec = cv2.solvePnP(tag_3d_points, image_points, K_M, D_C)
-            
-            if success:
-                # 计算距离（tvec 是平移向量）
-                distance = np.linalg.norm(tvec)
-                print(f"Distance to AprilTag: {distance:.2f} meters")
-
-                # 获取旋转矩阵
-                rotation_matrix, _ = cv2.Rodrigues(rvec)
-
-                # 世界坐标系中的 AprilTag 中心位置
-                tag_position_world = np.dot(rotation_matrix, np.array([0, 0, 0], dtype=np.float32)) + tvec.flatten()
-                print(f"AprilTag position in world coordinates: {tag_position_world}")
-                print("tevc:", tvec)
-                deg = calculate_theta(tvec[0], tvec[2])
-                print("Theta:", deg)
-
-                # 绘制相机位置到标签的向量
-                cv2.putText(frame, f"Distance: {distance:.2f} m", (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-
-                return [ID, distance, tvec, rotation_matrix, deg]
+            return [ID, image_points]
 
     def close(self):
         # 释放摄像头并关闭窗口

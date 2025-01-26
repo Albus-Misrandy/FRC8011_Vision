@@ -25,26 +25,20 @@ while True:
 
     # print("Success!")
 
-    results1 = camera_1.image_processing(frame1, detector, K1, dist_coeffs)
-    results2 = camera_2.image_processing(frame2, detector, K2, dist_coeffs)
+    results1 = camera_1.image_processing(frame1, detector)
+    results2 = camera_2.image_processing(frame2, detector)
 
-    info1 = camera_1.apriltag_process(results1, frame1, K1, dist_coeffs)
-    info2 = camera_2.apriltag_process(results2, frame2, K2, dist_coeffs)
+    info1 = camera_1.apriltag_process(results1, frame1)
+    info2 = camera_2.apriltag_process(results2, frame2)
 
     if info1:
         print("Fuck yes")
-        apriltag_world, rotate_theta, is_apriltag = check_id(info1[0])
-        if is_apriltag:
-            R_w2c = calculate_Rotation_Matrix(rotate_theta)
-            R_c2w = np.transpose(R_w2c)
-            # cam_in_tag_coordinate = inverse_camera(info1[2], info1[3])
-            cam_in_tag_coordinate = corrcet_camera_coordinate(info1[2])
-            cam_position = calculate_car_position(R_c2w, cam_in_tag_coordinate, apriltag_world)
-            print("R:", R_w2c)
-            print("Camera_coordinate:", cam_position)
-            print("cam_in_tag:", cam_in_tag_coordinate)
-            print("apriltag_world:", apriltag_world)
-        # calculate_car_position(is_apriltag, apriltag_world, info1[2], info1[3], info1[4])
+        # print("image_Points:", info1[1])
+        apriltag_world, rotate_theta, is_apriltag = check_id(info1[0], 0.165)
+        yaw1 = calculate_distance_yaw(frame1, tag_3d_points, info1[1], K1, dist_coeffs)
+        cam1_points = calculate_camera_points(apriltag_world, info1[1], K1, dist_coeffs)
+        # print("Points:", cam1_points)
+        Net.send_double_data("yaw", yaw1)
     elif info2 and info1 == None:
         print("Fuck")
     else:
