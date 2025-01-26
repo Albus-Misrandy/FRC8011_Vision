@@ -108,12 +108,24 @@ def calculate_distance_yaw(frame, tag_3d_points, image_points, K_M, D_C):
         # print("rvec:", rvec)
         # print("tevc:", tvec)
 
-        tan_yaw = abs(tvec[0][0] / tvec[2][0])
-        # print("tan_yaw:", tvec.shape)
-        yaw = np.arctan(tan_yaw)
-        yaw = np.degrees(yaw)
-        # print("yaw:", yaw)
-
         # 绘制相机位置到标签的向量
         cv2.putText(frame, f"Distance: {distance:.2f} m", (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-        return yaw
+
+def calculate_yaw(tag_3d_points, image_points, K_M, D_C):
+    _, rvec, _ = cv2.solvePnP(tag_3d_points, image_points, K_M, D_C)
+    R, _ = cv2.Rodrigues(rvec)
+    #从旋转矩阵提取欧拉角（Z-Y-X顺序，返回：Yaw, Pitch, Roll
+    sy = np.sqrt(R[0, 0]**2 + R[1, 0]**2)
+
+    singular = sy < 1e-6  # 判断是否接近奇异情况
+
+    if not singular:
+        roll = np.arctan2(R[1, 0], R[0, 0])  # 围绕z轴
+        yaw = np.arctan2(-R[2, 0], sy)    # 围绕y轴
+        pitch = np.arctan2(R[2, 1], R[2, 2]) # 围绕x轴
+    else:
+        yaw = np.arctan2(-R[1, 2], R[1, 1])
+        pitch = np.arctan2(-R[2, 0], sy)
+        roll = 0
+
+    return np.degrees(yaw), np.degrees(pitch), np.degrees(roll)

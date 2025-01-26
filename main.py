@@ -35,10 +35,15 @@ while True:
         print("Fuck yes")
         # print("image_Points:", info1[1])
         apriltag_world, rotate_theta, is_apriltag = check_id(info1[0], 0.165)
-        yaw1 = calculate_distance_yaw(frame1, tag_3d_points, info1[1], K1, dist_coeffs)
+        calculate_distance_yaw(frame1, tag_3d_points, info1[1], K1, dist_coeffs)
         cam1_points = calculate_camera_points(apriltag_world, info1[1], K1, dist_coeffs)
+        yaw1, _, _ = calculate_yaw(tag_3d_points, info1[1], K1, dist_coeffs)
         # print("Points:", cam1_points)
-        Net.send_double_data("yaw", yaw1)
+        # print(cam1_points.shape)
+        print("yaw:", yaw1)
+        Net.send_double_data("AprilTag_ID", info1[0])
+        vision_list = [cam1_points[0][0], cam1_points[1][0], yaw1]
+        Net.send_double_array_data("Vision", vision_list)
     elif info2 and info1 == None:
         print("Fuck")
     else:

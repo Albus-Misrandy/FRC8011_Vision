@@ -13,13 +13,13 @@ class Networktables():
         
     def send_double_data(self, d_name, d_value):
         # 用于监测和Networktables的连接
-        # if not NetworkTables.isConnected():
-        #     print("Disconnect")
+        if not NetworkTables.isConnected():
+            print("Disconnect")
         self.d_table.getEntry(d_name).setDouble(d_value)
         # print("sended!")
 
     def send_double_array_data(self, darr_name, darr_value):
-        self.d_table = NetworkTables.getEntry(darr_name).setDoubleArray(darr_value)
+        self.d_table.getEntry(darr_name).setDoubleArray(darr_value)
 
     # def ui_double_data(self, uidata_name, uidata_value):
     #     self.ui_table = NetworkTables.getEntry(uidata_name).setDouble(uidata_value)
