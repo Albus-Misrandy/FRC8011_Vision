@@ -7,7 +7,8 @@ NetworkTables.initialize(server='10.80.11.2')
 
 class Networktables():
     def __init__(self):
-        self.v_table = NetworkTables.getTable("MyVideo")
+        self.v_table_1 = NetworkTables.getTable("MyVideo1")
+        self.v_table_2 = NetworkTables.getTable("MyVideo2")
         self.d_table = NetworkTables.getTable("SmartDashboard")
         self.ui_table = NetworkTables.getTable("My_UI")
         
@@ -24,8 +25,11 @@ class Networktables():
     # def ui_double_data(self, uidata_name, uidata_value):
     #     self.ui_table = NetworkTables.getEntry(uidata_name).setDouble(uidata_value)
 
-    def send_video_data(self, v_name, v_value):
-        self.v_table.putString(v_name, v_value)
+    def send_video_data_1(self, v_name, v_value):
+        self.v_table_1.putString(v_name, v_value)
+
+    def send_video_data_2(self, v_name, v_value):
+        self.v_table_2.putString(v_name, v_value)
 
     def encode_video(self, img):
         JPEG_param = [int(cv2.IMWRITE_JPEG_QUALITY), 50]

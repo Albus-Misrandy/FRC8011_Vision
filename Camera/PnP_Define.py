@@ -6,10 +6,10 @@ fy_red = 730.63326546
 cx_red = 335.24685303
 cy_red = 266.72465222
 
-fx_black = 734.82824424
-fy_black = 716.99327962
-cx_black = 360.33281319
-cy_black = 251.27352276
+fx_black = 720.53113962
+fy_black = 734.76313427
+cx_black = 334.31147457
+cy_black = 268.49325091
 
 K1 = np.array([
     [fx_red, 0, cx_red],
@@ -31,8 +31,8 @@ dist_coeffs_black = np.array([2.69155271e-01, -2.50473219e+00, -8.61186702e-04, 
 # 标签的 3D 坐标
 tag_size = 0.165  # 标签边长，单位：米
 tag_3d_points = np.array([
-    [-tag_size / 2, -tag_size / 2, 0],
-    [tag_size / 2, -tag_size / 2, 0],
+    [-tag_size / 2, tag_size / 2, 0],
     [tag_size / 2, tag_size / 2, 0],
-    [-tag_size / 2, tag_size / 2, 0]
+    [tag_size / 2, -tag_size / 2, 0],
+    [-tag_size / 2, -tag_size / 2, 0]
 ], dtype=np.float32)

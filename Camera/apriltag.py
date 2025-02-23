@@ -6,6 +6,8 @@ from Calculate.calculate_function import *
 class AprilTag_Camera():
     def __init__(self, i):
         self.cap = cv2.VideoCapture(i)
+        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
         self.kalman = cv2.KalmanFilter(4, 2)
         self.kalman.measurementMatrix = np.array([[1, 0, 0, 0],
@@ -42,7 +44,7 @@ class AprilTag_Camera():
         for r in results:
             # 获取编号
             ID = r.tag_id
-            # print(ID)
+            print(type(ID))
             # 获取标签的中心位置
             tag_center = (int(r.center[0]), int(r.center[1]))
             # 更新卡尔曼滤波器

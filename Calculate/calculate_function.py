@@ -14,7 +14,7 @@ def calculate_flat_distance(x, z):
       return flat_distance
 
 def check_id(apriltag_id, tag_size):
-    if apriltag_id == 17:
+    if apriltag_id == 13:
         actual_x = tag_size * math.cos(np.radians(30))
         actual_y = tag_size * math.sin(np.radians(30))
         apriltag_world = np.array([
@@ -98,18 +98,37 @@ def calculate_camera_points(tag_3d_points, image_points, K_M, D_C):
 
         return camera_coordinate
     
-def calculate_distance_yaw(frame, tag_3d_points, image_points, K_M, D_C):
+def calculate_car_points(cam_points, theta, cam_num):
+    if cam_num == 1:
+        R = np.array([
+            [np.cos(math.radians(theta)), -np.sin(math.radians(theta))],
+            [np.sin(math.radians(theta)), np.cos(math.radians(theta))]
+        ])
+        relative_position = np.array([-0.28452, -0.04908])
+        rotated_position = np.dot(R, relative_position)
+        car_points = rotated_position + cam_points
+        return car_points
+    if cam_num == 2:
+        R = np.array([
+            [np.cos(math.radians(theta)), -np.sin(math.radians(theta))],
+            [np.sin(math.radians(theta)), np.cos(math.radians(theta))]
+        ])
+        relative_position = np.array([0.28452, -0.04908])
+        rotated_position = np.dot(R, relative_position)
+        car_points = rotated_position + cam_points
+        return car_points
+    
+def calculate_distance(frame, tag_3d_points, image_points, K_M, D_C):
      success, rvec, tvec = cv2.solvePnP(tag_3d_points, image_points, K_M, D_C)
 
      if success:
         # 计算距离（tvec 是平移向量）
-        distance = np.linalg.norm(tvec)
+        distance = math.sqrt(tvec[0][0] ** 2 + tvec[2][0] ** 2)
         # print(f"Distance to AprilTag: {distance:.2f} meters")
         # print("rvec:", rvec)
         # print("tevc:", tvec)
 
-        # 绘制相机位置到标签的向量
-        cv2.putText(frame, f"Distance: {distance:.2f} m", (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+        return distance, tvec
 
 def calculate_yaw(tag_3d_points, image_points, K_M, D_C):
     _, rvec, _ = cv2.solvePnP(tag_3d_points, image_points, K_M, D_C)
@@ -120,12 +139,39 @@ def calculate_yaw(tag_3d_points, image_points, K_M, D_C):
     singular = sy < 1e-6  # 判断是否接近奇异情况
 
     if not singular:
-        roll = np.arctan2(R[1, 0], R[0, 0])  # 围绕z轴
+        pitch = np.arctan2(R[1, 0], R[0, 0])  # 围绕z轴
         yaw = np.arctan2(-R[2, 0], sy)    # 围绕y轴
-        pitch = np.arctan2(R[2, 1], R[2, 2]) # 围绕x轴
+        roll = np.arctan2(R[2, 1], R[2, 2]) # 围绕x轴
     else:
         yaw = np.arctan2(-R[1, 2], R[1, 1])
         pitch = np.arctan2(-R[2, 0], sy)
         roll = 0
 
     return np.degrees(yaw), np.degrees(pitch), np.degrees(roll)
+
+def Solving_RTtriangle_degrees(b, c, yaw):
+    theta_rad = math.acos(abs(b) / abs(c))
+    theta_deg = math.degrees(theta_rad)
+    if yaw > 0:
+        return theta_deg
+    if yaw <= 0:
+        return -theta_deg
+
+def Solving_triangle_sides(a, b, theta):
+    theta_rad = math.radians(theta)
+    c = math.sqrt(a ** 2 + b ** 2 - 2 * a * b * math.cos(theta_rad))
+    return c
+
+def Solving_Laws_of_Cosines_degrees(a, b, c):
+    cos_theta_rad = (a ** 2 + b ** 2 - c ** 2)/(2 * a * b)
+    theta_rad = math.acos(cos_theta_rad)
+    theta_deg = math.degrees(theta_rad)
+    return theta_deg
+
+def Solving_RTtriangle_RTsides(theta_rad, c, yaw):
+    a = math.cos(theta_rad) * c
+    b = math.sin(theta_rad) * c
+    if yaw > 0:
+        return a, b
+    if yaw <= 0:
+        return -a, b
